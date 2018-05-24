@@ -16,11 +16,14 @@ import roslib
 roslib.load_manifest('dynamixel_driver')
 from dynamixel_driver import dynamixel_io
 import rospy
+import numpy as np
 #import dynamixel_io
 from dynamixel_driver.dynamixel_const import *
-
+from sensor_msgs.msg import JointState
+#from numpy import zeros, array, linspace
 from dynamixel_msgs.msg import MotorState
 from dynamixel_msgs.msg import MotorStateList
+
 
 def twos_complement(val, nbits):
     	"""Compute the 2's complement of int value val"""
@@ -33,9 +36,16 @@ def twos_complement(val, nbits):
             	val = val - (1 << nbits)
     	return val
 
+currentJointState = JointState()
+def jointStatesCallback(msg):
+    global currentJointState
+    currentJointState = msg
+
 if __name__ == '__main__':
-    port_name='/dev/ttyUSB0'
-    port_namespace='ttyUSB0'
+    port_name_0='/dev/ttyUSB0'
+    port_namespace_0='ttyUSB0'
+    port_name_1='/dev/ttyUSB1'
+    port_namespace_1='ttyUSB1'
     baud_rate=3000000
     min_motor_id=1
     max_motor_id=25
@@ -50,30 +60,60 @@ if __name__ == '__main__':
     m=842
     I=m*r*r
     c=r*m*9.81
-    sync_write_address= [0x66, 0x00]
+#    sync_write_address= [0x66, 0x00]		#current goal
     try:
-	#rospy.init_node('dual_joint', anonymous=True)
-        dxl_io = dynamixel_io.DynamixelIO(port_name, baud_rate)
+	rospy.init_node('dual_joint', anonymous=True)
+	rospy.Subscriber("minie/joint_cmd", JointState, jointStatesCallback)   
+#	name: [r_hip_y0, r_hip_r1, r_hip_p2, r_knee_p3, r_ankle_p4, r_ankle_r5, l_hip_y6, l_hip_r7, l_hip_p8,
+#  l_knee_p9, l_ankle_p10, l_ankle_r11, torso_y12, r_shoulder_p13, r_shoulder_r14, r_shoulder_y15,
+#  r_elbow_p16, l_shoulder_p17, l_shoulder_r18, l_shoulder_y19, l_elbow_p_20]
+#	position: [0.0, 0.0, -0.34906585039886573, 0.6981317007977315, -0.34906585039886573, 0.0, 0.0, 0.0, -0.34906585039886573, 0.6981317007977315, -0.34906585039886573, 0.0, 0.0, 0.3740066054098645, -0.49960922502963645, 0.03811450020505214, -1.2552722139608568, 0.0, 0.08726646259971643, 0.0, -0.34906585039886573]
+#	velocity: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0379350803579471, 0.027854058598427905, 0.03089937889047767, -0.10561999594783833, 0.0, 0.0, 0.0, 0.0]
+#	effort: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+	 
+        dxl_io_0 = dynamixel_io.DynamixelIO(port_name_0, baud_rate)
+        dxl_io_1 = dynamixel_io.DynamixelIO(port_name_1, baud_rate)
     except dynamixel_io.SerialOpenError, soe:
         print 'ERROR:', soe
     else:
-        print 'Turning torque %s for motor %d' % (torque_on, motor_id)
-        if dxl_io.ping(motor_id):
-        	torque_response= dxl_io.set_torque_enabled(4,1)
+        print 'Turning left torque %s for motor %d' % (torque_on, motor_id)
+        if dxl_io_0.ping(motor_id):
+        	torque_response= dxl_io_0.set_torque_enabled(4,1)
 		print "torque enable4 response", torque_response
 		time.sleep(1)
-		torque_response= dxl_io.set_torque_enabled(3,1)
+		torque_response= dxl_io_0.set_torque_enabled(3,1)
+		print "torque enable3 response", torque_response
+		time.sleep(1) 
+                torque_response= dxl_io_0.set_torque_enabled(2,1)
 		print "torque enable2 response", torque_response
 		time.sleep(1) 
-                torque_response= dxl_io.set_torque_enabled(2,1)
-		print "torque enable2 response", torque_response
-		time.sleep(1) 
-		torque_response= dxl_io.set_torque_enabled(1,1)
+		torque_response= dxl_io_0.set_torque_enabled(1,1)
 		print "torque enable1 response", torque_response
 		time.sleep(3)
-                print 'done'
+                print 'left arm done'
         else:
             print 'ERROR: motor %d did not respond. Make sure to specify the correct baudrate.' % motor_id
+            
+        print 'Turning right torque %s for motor %d' % (torque_on, motor_id)
+        if dxl_io_1.ping(motor_id):
+        	torque_response= dxl_io_1.set_torque_enabled(4,1)
+		print "torque enable4 response", torque_response
+		time.sleep(1)
+		torque_response= dxl_io_1.set_torque_enabled(3,1)
+		print "torque enable3 response", torque_response
+		time.sleep(1) 
+                torque_response= dxl_io_1.set_torque_enabled(2,1)
+		print "torque enable2 response", torque_response
+		time.sleep(1) 
+		torque_response= dxl_io_1.set_torque_enabled(1,1)
+		print "torque enable1 response", torque_response
+		time.sleep(3)
+                print 'right arm done'
+        else:
+            print 'ERROR: motor %d did not respond. Make sure to specify the correct baudrate.' % motor_id
+            
+            
 
 	#write_address= [0x74, 0x00]
 #	write_data = [0xAA, 0x02, 0x00, 0x00 ]
@@ -81,15 +121,17 @@ if __name__ == '__main__':
 #	print "write done, response:", write_response
 
 	# write current goal to motor 1
-	write_address= [0x66, 0x00]
-	val = 0
-	nbits = 16
+#	write_address= [0x66, 0x00]
+	sync_write_address= [0x74, 0x00]		#position
+	val = 2048
+	nbits = 32
 	write_data_whole= twos_complement(val, nbits)
 	write_data_L=write_data_whole & 0xFF
 	write_data_H = (write_data_whole>>8) & 0xFF
 	write_data = [write_data_L, write_data_H ]
-	write_response = dxl_io.write(1,write_address, write_data)
-	print "write done, response:", write_response
+#	write_response = dxl_io_0.write(1,write_address, write_data)
+#	write_response = dxl_io_1.write(1,write_address, write_data)
+#	print "write done, response:", write_response
 ###################################################################
 #	val1=val
 #	val2=-val1;
@@ -106,17 +148,18 @@ if __name__ == '__main__':
 #	print "sync_write done, current control"
 ##############################################################################
 	last_time=time.time()
-	write_=[]
-	read_cur1=[]
-	read_cur2=[]
-	read_pos1=[]
-	read_vel2=[]
-	write_time=[]
-	read_timecur1=[]
-	read_timecur2=[]
-	read_time2=[]
-	read_time3=[]
-	torque_1=[]
+#	write_=[]
+#	read_cur1=[]
+#	read_cur2=[]
+#	read_pos1=[]
+#	read_vel2=[]
+#	write_time=[]
+#	read_timecur1=[]
+#	read_timecur2=[]
+#	read_time2=[]
+#	read_time3=[]
+#	torque_1=[]
+	data=[]
 	last_read_vel=0
 	last_read_time=last_time
 	#rr = rospy.Rate(500) # 10hz
@@ -128,45 +171,150 @@ if __name__ == '__main__':
 
 	while not rospy.is_shutdown() :
 		current_time =time.time()
-		val=20*math.sin(3.1416*current_time)-20
+#		print "position", currentJointState.position
+		data=currentJointState.position
+		data=np.array(data, dtype=np.float32)
+		data=data*2048/3.14159
+		print "data position", data
+#		print currentJointState.velocity
+#		print currentJointState.effort				
+		############### right arm ####################################
+#		val=20*math.sin(3.1416*current_time)-20
+#		val=20*math.sin(3.1416*0.5*current_time)+20 	##right rsp
+		val_rsp=int(round(val+data[13]))
+		write_data_whole1= twos_complement(val_rsp, nbits)
+    		write_data_1rsp = write_data_whole1 & 0xFF
+    		write_data_2rsp = (write_data_whole1>>8) & 0xFF
+    		write_data_3rsp = (write_data_whole1>>16) & 0xFF
+    		write_data_4rsp = (write_data_whole1>>32) & 0xFF
 		#val=-20
-		val=int(round(val))
-		write_data_whole= twos_complement(val, nbits)
-		write_data_L=write_data_whole & 0xFF
-		write_data_H = (write_data_whole>>8) & 0xFF
-		write_data = [write_data_L, write_data_H ]
-		write_response = dxl_io.write(1,write_address, write_data)
-		print "write done, response:", write_response
+#		val=int(round(val))
+#		write_data_whole= twos_complement(val, nbits)
+#		write_data_L=write_data_whole & 0xFF
+#		write_data_H = (write_data_whole>>8) & 0xFF
+#		write_data = [write_data_L, write_data_H ]
+#		write_response = dxl_io_1.write(1,write_address, write_data)
+#		print "right arm write done, response:", write_response
 		######write to motor 2############
-		val=20*math.sin(3.1416*current_time)+20
+#		val=20*math.sin(3.1416*current_time)+20
+#		val=5*math.sin(3.1416*0.5*current_time)-15		##right rsr
+		val_rsr=int(round(val+data[14]))
+		write_data_whole1= twos_complement(val_rsr, nbits)
+    		write_data_1rsr = write_data_whole1 & 0xFF
+    		write_data_2rsr = (write_data_whole1>>8) & 0xFF
+    		write_data_3rsr = (write_data_whole1>>16) & 0xFF
+    		write_data_4rsr = (write_data_whole1>>32) & 0xFF
 		#val=20
-		val=int(round(val))
-		write_data_whole= twos_complement(val, nbits)
-		write_data_L=write_data_whole & 0xFF
-		write_data_H = (write_data_whole>>8) & 0xFF
-		write_data = [write_data_L, write_data_H ]
-		write_response = dxl_io.write(2,write_address, write_data)
-		print "write done, response:", write_response
-		######write to motor 3############
-		val=5*math.sin(3.1416*current_time)-5
-		#val=-5
-		val=int(round(val))
-		write_data_whole= twos_complement(val, nbits)
-		write_data_L=write_data_whole & 0xFF
-		write_data_H = (write_data_whole>>8) & 0xFF
-		write_data = [write_data_L, write_data_H ]
-		write_response = dxl_io.write(3,write_address, write_data)
-		print "write done, response:", write_response
-#		########## write to motor 4 ##############
-		val=20*math.sin(3.1416*current_time)-10
+#		val=int(round(val))
+#		write_data_whole= twos_complement(val, nbits)
+#		write_data_L=write_data_whole & 0xFF
+#		write_data_H = (write_data_whole>>8) & 0xFF
+#		write_data = [write_data_L, write_data_H ]
+#		write_response = dxl_io_1.write(2,write_address, write_data)
+#		print "write done, response:", write_response
+#		######write to motor 3############
+##		val=5*math.sin(3.1416*current_time)-5
+#		val=5*math.sin(3.1416*current_time)+5		##right rsy
+		val_rsy=int(round(val+data[15]))
+		write_data_whole1= twos_complement(val_rsy, nbits)
+    		write_data_1rsy = write_data_whole1 & 0xFF
+    		write_data_2rsy = (write_data_whole1>>8) & 0xFF
+    		write_data_3rsy = (write_data_whole1>>16) & 0xFF
+    		write_data_4rsy = (write_data_whole1>>32) & 0xFF
+#		#val=-5
+#		val=int(round(val))
+#		write_data_whole= twos_complement(val, nbits)
+#		write_data_L=write_data_whole & 0xFF
+#		write_data_H = (write_data_whole>>8) & 0xFF
+#		write_data = [write_data_L, write_data_H ]
+#		write_response = dxl_io_1.write(3,write_address, write_data)
+#		print "write done, response:", write_response
+##		########## write to motor 4 ##############
+#		val=20*math.sin(3.1416*current_time)-10
+#		val=10*math.sin(3.1416*0.5*current_time)+5		##right	re	
+		val_re=int(round(val-data[16]))
+		write_data_whole1= twos_complement(val_re, nbits)
+    		write_data_1re = write_data_whole1 & 0xFF
+    		write_data_2re = (write_data_whole1>>8) & 0xFF
+    		write_data_3re = (write_data_whole1>>16) & 0xFF
+    		write_data_4re = (write_data_whole1>>32) & 0xFF
+    		sync_write_data = [0x04, 0x00,0x01, write_data_1rsp, write_data_2rsp, write_data_3rsp, write_data_4rsp, 0x02, write_data_1rsr,write_data_2rsr, write_data_3rsr, write_data_4rsr, 0x03, write_data_1rsy, write_data_2rsy, write_data_3rsy, write_data_4rsy, 0x04, write_data_1re,write_data_2re, write_data_3re, write_data_4re ]
+    		dxl_io_1.sync_write(sync_write_address, sync_write_data)
 		#val=0
-		val=int(round(val))
-		write_data_whole= twos_complement(val, nbits)
-		write_data_L=write_data_whole & 0xFF
-		write_data_H = (write_data_whole>>8) & 0xFF
-		write_data = [write_data_L, write_data_H ]
-		write_response = dxl_io.write(4,write_address, write_data)
-		print "write done, response:", write_response
+#		val=int(round(val))
+#		write_data_whole= twos_complement(val, nbits)
+#		write_data_L=write_data_whole & 0xFF
+#		write_data_H = (write_data_whole>>8) & 0xFF
+#		write_data = [write_data_L, write_data_H ]
+##		write_response = dxl_io_1.write(4,write_address, write_data)
+#		print "write arm done, response:", write_response
+		################ left arm ###############################3
+#		val=20*math.sin(3.1416*0.5*current_time)-15		## lsp
+		val_lsp=int(round(val+data[17]))
+		write_data_whole1= twos_complement(val_lsp, nbits)
+    		write_data_1lsp = write_data_whole1 & 0xFF
+    		write_data_2lsp = (write_data_whole1>>8) & 0xFF
+    		write_data_3lsp = (write_data_whole1>>16) & 0xFF
+    		write_data_4lsp = (write_data_whole1>>32) & 0xFF
+		#val=-20
+#		val=int(round(val))
+#		write_data_whole= twos_complement(val, nbits)
+#		write_data_L=write_data_whole & 0xFF
+#		write_data_H = (write_data_whole>>8) & 0xFF
+#		write_data = [write_data_L, write_data_H ]
+##		write_response = dxl_io_0.write(1,write_address, write_data)
+#		print "left arm write done, response:", write_response
+		######write to motor 2############
+#		val=5*math.sin(3.1416*0.5*current_time)+15		## lsr
+		val_lsr=int(round(val+data[18]))
+		write_data_whole1= twos_complement(val_lsr, nbits)
+    		write_data_1lsr = write_data_whole1 & 0xFF
+    		write_data_2lsr = (write_data_whole1>>8) & 0xFF
+    		write_data_3lsr = (write_data_whole1>>16) & 0xFF
+    		write_data_4lsr = (write_data_whole1>>32) & 0xFF
+		#val=20
+#		val=int(round(val))
+#		write_data_whole= twos_complement(val, nbits)
+#		write_data_L=write_data_whole & 0xFF
+#		write_data_H = (write_data_whole>>8) & 0xFF
+#		write_data = [write_data_L, write_data_H ]
+#		write_response = dxl_io_0.write(2,write_address, write_data)
+#		print "write done, response:", write_response
+#		######write to motor 3############
+#		val=5*math.sin(3.1416*current_time)-5		## lsy
+		val_lsy=int(round(val+data[19]))
+		write_data_whole1= twos_complement(val_lsy, nbits)
+    		write_data_1lsy = write_data_whole1 & 0xFF
+    		write_data_2lsy = (write_data_whole1>>8) & 0xFF
+    		write_data_3lsy = (write_data_whole1>>16) & 0xFF
+    		write_data_4lsy = (write_data_whole1>>32) & 0xFF
+		#val=-5
+#		val=int(round(val))
+#		write_data_whole= twos_complement(val, nbits)
+#		write_data_L=write_data_whole & 0xFF
+#		write_data_H = (write_data_whole>>8) & 0xFF
+#		write_data = [write_data_L, write_data_H ]
+		#write_response = dxl_io_0.write(3,write_address, write_data)
+#		print "write done, response:", write_response
+##		########## write to motor 4 ##############
+#		val=10*math.sin(3.1416*0.5*current_time)-8		##le
+		val_le=int(round(val+data[20]))
+		write_data_whole1= twos_complement(val_le, nbits)
+    		write_data_1le = write_data_whole1 & 0xFF
+    		write_data_2le = (write_data_whole1>>8) & 0xFF
+    		write_data_3le = (write_data_whole1>>16) & 0xFF
+    		write_data_4le = (write_data_whole1>>32) & 0xFF
+    		sync_write_data = [0x04, 0x00,0x01, write_data_1lsp, write_data_2lsp, write_data_3lsp, write_data_4lsp, 0x02, write_data_1lsr,write_data_2lsr, write_data_3lsr, write_data_4lsr, 0x03, write_data_1lsy, write_data_2lsy, write_data_3lsy, write_data_4lsy, 0x04, write_data_1le,write_data_2le, write_data_3le, write_data_4le ]
+    		dxl_io_0.sync_write(sync_write_address, sync_write_data)
+    		print "sync write done, response:"
+		#val=0
+#		val=int(round(val))
+#		write_data_whole= twos_complement(val, nbits)
+#		write_data_L=write_data_whole & 0xFF
+#		write_data_H = (write_data_whole>>8) & 0xFF
+#		write_data = [write_data_L, write_data_H ]
+#		write_response = dxl_io_0.write(4,write_address, write_data)
+#		print "left write done, response:", write_response
 		##############for sync write###############################################
 #		val1=int(round(val))
 #		val2=-val1;
@@ -227,18 +375,22 @@ if __name__ == '__main__':
 #		#print "read done, response:", read_response
 		##################### data collection done ########################################
 		
-		if  (current_time-last_time)>10:
+		if  (current_time-last_time)>50:
 			print "time up"
 			val = 0
 			write_data_whole= twos_complement(val, nbits)
 			write_data_L=write_data_whole & 0xFF
 			write_data_H = (write_data_whole>>8) & 0xFF
 			write_data = [write_data_L, write_data_H ]
-			write_response = dxl_io.write(1,write_address, write_data)
-			write_response = dxl_io.write(2,write_address, write_data)
-			write_response = dxl_io.write(3,write_address, write_data)
-			write_response = dxl_io.write(4,write_address, write_data)
-			print "write done, response:", write_response
+#			write_response = dxl_io_0.write(1,write_address, write_data)
+#			write_response = dxl_io_0.write(2,write_address, write_data)
+#			write_response = dxl_io_0.write(3,write_address, write_data)
+#			write_response = dxl_io_0.write(4,write_address, write_data)
+#			write_response = dxl_io_1.write(1,write_address, write_data)
+#			write_response = dxl_io_1.write(2,write_address, write_data)
+#			write_response = dxl_io_1.write(3,write_address, write_data)
+#			write_response = dxl_io_1.write(4,write_address, write_data)
+#			print "write done, response:", write_response
 #			write_data_whole= self.twos_complement(val, nbits)
 #			write_data_L=write_data_whole & 0xFF
 #			write_data_H = (write_data_whole>>8) & 0xFF
@@ -251,10 +403,14 @@ if __name__ == '__main__':
 #			time.sleep(1) 
 ###############################################################################################
 			######### torque disable ##################################
-			torque_response= dxl_io.set_torque_enabled(1,0)
-			torque_response= dxl_io.set_torque_enabled(2,0)
-			torque_response= dxl_io.set_torque_enabled(3,0)
-			torque_response= dxl_io.set_torque_enabled(4,0)
+			torque_response= dxl_io_0.set_torque_enabled(1,0)
+			torque_response= dxl_io_0.set_torque_enabled(2,0)
+			torque_response= dxl_io_0.set_torque_enabled(3,0)
+			torque_response= dxl_io_0.set_torque_enabled(4,0)
+			torque_response= dxl_io_1.set_torque_enabled(1,0)
+			torque_response= dxl_io_1.set_torque_enabled(2,0)
+			torque_response= dxl_io_1.set_torque_enabled(3,0)
+			torque_response= dxl_io_1.set_torque_enabled(4,0)
 			print "torque disable response"#, torque_response
 			########################################################3
 ##			print "data write", write_
@@ -285,5 +441,5 @@ if __name__ == '__main__':
 #	sync_write_data = [0x02, 0x00, 0x01, write_data_L, write_data_H, 0x02, write_data_L, write_data_H]
 #	self.dxl_io.sync_write(sync_write_address, sync_write_data)
 #	print "sync_write done, current control"
-	#sys.exit(1)
+    
 

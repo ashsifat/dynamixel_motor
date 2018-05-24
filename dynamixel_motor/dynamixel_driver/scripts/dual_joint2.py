@@ -34,8 +34,8 @@ def twos_complement(val, nbits):
     	return val
 
 if __name__ == '__main__':
-    port_name='/dev/ttyUSB1'
-    port_namespace='ttyUSB1'
+    port_name='/dev/ttyUSB4'
+    port_namespace='ttyUSB4'
     baud_rate=3000000
     min_motor_id=1
     max_motor_id=25

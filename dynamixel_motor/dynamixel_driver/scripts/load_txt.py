@@ -41,7 +41,7 @@ def twos_complement(val, nbits):
 def pos_control2():
     pub = rospy.Publisher('current', Byte, queue_size=1)
     rospy.init_node('pos_control2', anonymous=True)
-    rate = rospy.Rate(500) # 10hz
+    rate = rospy.Rate(1000) # 10hz
     #angles=np.genfromtxt('athena_pseudo_walk_joint_angles',usecols=(9,10,11,12,13,14,15,16,17,18,19,20))
     angles=np.genfromtxt('athena_pseudo_walk_footheight015_step015',usecols=(9,10,11,12,13,14,15,16,17,18,19,20))
     #athena_pseudo_walk_footheight015_step015	
@@ -206,7 +206,8 @@ def pos_control2():
     write_data_22r = (write_data_whole2>>8) & 0xFF
     write_data_32r = (write_data_whole2>>16) & 0xFF
     write_data_42r = (write_data_whole2>>24) & 0xFF
-    sync_write_data = [0x04, 0x00,0x03, write_data_11r, write_data_21r, write_data_31r, write_data_41r, 0x04, write_data_12r,write_data_22r, write_data_32r, write_data_42r, 0x05, write_data_11p, write_data_21p, write_data_31p, write_data_41p, 0x06, write_data_12p,write_data_22p, write_data_32p, write_data_42p ]
+#    sync_write_data = [0x04, 0x00,0x03, write_data_11r, write_data_21r, write_data_31r, write_data_41r, 0x04, write_data_12r,write_data_22r, write_data_32r, write_data_42r, 0x05, write_data_11p, write_data_21p, write_data_31p, write_data_41p, 0x06, write_data_12p,write_data_22p, write_data_32p, write_data_42p ]
+    sync_write_data = [0x04, 0x00, 0x05, write_data_11p, write_data_21p, write_data_31p, write_data_41p, 0x06, write_data_12p,write_data_22p, write_data_32p, write_data_42p ]
     dxl_io_0.sync_write(sync_write_address, sync_write_data)
     ###########3 zero to right hip yaw
 #    sync_write_data = [0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00 ]
@@ -243,7 +244,8 @@ def pos_control2():
     write_data_22r = (write_data_whole2>>8) & 0xFF
     write_data_32r = (write_data_whole2>>16) & 0xFF
     write_data_42r = (write_data_whole2>>24) & 0xFF
-    sync_write_data = [0x04, 0x00,0x03, write_data_11r, write_data_21r, write_data_31r, write_data_41r, 0x04, write_data_12r,write_data_22r, write_data_32r, write_data_42r, 0x05, write_data_11, write_data_21, write_data_31, write_data_41, 0x06, write_data_12,write_data_22, write_data_32, write_data_42 ]
+#    sync_write_data = [0x04, 0x00,0x03, write_data_11r, write_data_21r, write_data_31r, write_data_41r, 0x04, write_data_12r,write_data_22r, write_data_32r, write_data_42r, 0x05, write_data_11, write_data_21, write_data_31, write_data_41, 0x06, write_data_12,write_data_22, write_data_32, write_data_42 ]
+    sync_write_data = [0x04, 0x00, 0x05, write_data_11, write_data_21, write_data_31, write_data_41, 0x06, write_data_12,write_data_22, write_data_32, write_data_42 ]
     dxl_io_1.sync_write(sync_write_address, sync_write_data)
     ############## rkp, rap #######################################333
     val1_rkp=int(round(val-angles[0,3]))
@@ -408,7 +410,8 @@ def pos_control2():
 		    write_data_22r = (write_data_whole2>>8) & 0xFF
 		    write_data_32r = (write_data_whole2>>16) & 0xFF
 		    write_data_42r = (write_data_whole2>>24) & 0xFF
-		    sync_write_data = [0x04, 0x00,0x03, write_data_11r, write_data_21r, write_data_31r, write_data_41r, 0x04, write_data_12r,write_data_22r, write_data_32r, write_data_42r, 0x05, write_data_11p, write_data_21p, write_data_31p, write_data_41p, 0x06, write_data_12p,write_data_22p, write_data_32p, write_data_42p ]
+		    #sync_write_data = [0x04, 0x00,0x03, write_data_11r, write_data_21r, write_data_31r, write_data_41r, 0x04, write_data_12r,write_data_22r, write_data_32r, write_data_42r, 0x05, write_data_11p, write_data_21p, write_data_31p, write_data_41p, 0x06, write_data_12p,write_data_22p, write_data_32p, write_data_42p ]
+		    sync_write_data = [0x04, 0x00, 0x05, write_data_11p, write_data_21p, write_data_31p, write_data_41p, 0x06, write_data_12p,write_data_22p, write_data_32p, write_data_42p ]
 		    dxl_io_0.sync_write(sync_write_address, sync_write_data)
 		    ################### rhp #########################
 		    val1_rhp=int(round(val+angles[i,2]))
@@ -442,7 +445,8 @@ def pos_control2():
 		    write_data_22r = (write_data_whole2>>8) & 0xFF
 		    write_data_32r = (write_data_whole2>>16) & 0xFF
 		    write_data_42r = (write_data_whole2>>24) & 0xFF
-		    sync_write_data = [0x04, 0x00,0x03, write_data_11r, write_data_21r, write_data_31r, write_data_41r, 0x04, write_data_12r,write_data_22r, write_data_32r, write_data_42r, 0x05, write_data_11, write_data_21, write_data_31, write_data_41, 0x06, write_data_12,write_data_22, write_data_32, write_data_42 ]
+		    #sync_write_data = [0x04, 0x00,0x03, write_data_11r, write_data_21r, write_data_31r, write_data_41r, 0x04, write_data_12r,write_data_22r, write_data_32r, write_data_42r, 0x05, write_data_11, write_data_21, write_data_31, write_data_41, 0x06, write_data_12,write_data_22, write_data_32, write_data_42 ]
+		    sync_write_data = [0x04, 0x00, 0x05, write_data_11, write_data_21, write_data_31, write_data_41, 0x06, write_data_12,write_data_22, write_data_32, write_data_42 ]
 		    dxl_io_1.sync_write(sync_write_address, sync_write_data)
 		    ############## rkp, rap #######################################333
 		    val1_rkp=int(round(val-angles[i,3]))
@@ -547,7 +551,8 @@ def pos_control2():
 		    print "sync_write done, position control"
 		    i=i+1
 		    #pub.publish(val)
-		    if i==20765: 
+#		    if i==20765: #break
+		    if i==37952: #break
 		    	i=1
 		    	j=j+1
 #		if  (current_time-last_time)>5:
